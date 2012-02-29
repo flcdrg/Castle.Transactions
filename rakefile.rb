@@ -14,7 +14,6 @@ require 'buildscripts/paths'
 require 'buildscripts/utils'
 require 'buildscripts/environment'
 
-
 # profile time: "PS \> $start = [DateTime]::UtcNow ; rake ; $end = [DateTime]::UtcNow ; $diff = $end-$start ; "Started: $start to $end, a diff of $diff"
 task :default => [:release]
 
@@ -139,7 +138,7 @@ namespace :castle do
   # ===================================================
   task :output => [:tx_output, :autotx_output] do
     Dir.glob(File.join(Folders[:binaries], "*.txt")){ | fn | File.delete(fn) } # remove old commit marker files
-	data = commit_data() # get semantic data
+    data = commit_data() # get semantic data
     File.open File.join(Folders[:binaries], "#{data[0]} - #{data[1]}.txt"), "w" do |f|
       f.puts %Q{aa
     This file's name gives you the specifics of the commit.
@@ -202,24 +201,24 @@ namespace :castle do
     nunit.command = Commands[:nunit]
     nunit.options '/framework v4.0', "/out #{Files[:tx][:test_log]}", "/xml #{Files[:tx][:test_xml]}"
     nunit.assemblies Files[:tx][:test]
-	CLEAN.include(Folders[:tests])
+    CLEAN.include(Folders[:tests])
   end
   
   task :tx_test_publish_artifacts => :tx_nunit do
-	puts "##teamcity[importData type='nunit' path='#{Files[:tx][:test_xml]}']"
-	puts "##teamcity[publishArtifacts '#{Files[:tx][:test_log]}']"
+    puts "##teamcity[importData type='nunit' path='#{Files[:tx][:test_xml]}']"
+    puts "##teamcity[publishArtifacts '#{Files[:tx][:test_log]}']"
   end
     
   nunit :autotx_nunit do |nunit|
     nunit.command = Commands[:nunit]
     nunit.options '/framework v4.0', "/out #{Files[:autotx][:test_log]}", "/xml #{Files[:autotx][:test_xml]}"
     nunit.assemblies Files[:autotx][:test]
-	CLEAN.include(Folders[:tests])
+    CLEAN.include(Folders[:tests])
   end
   
   task :autotx_test_publish_artifacts => :autotx_nunit do
-	puts "##teamcity[publishArtifacts path='#{Files[:autotx][:test_xml]}']"
-	puts "##teamcity[publishArtifacts '#{Files[:autotx][:test_log]}']"
+    puts "##teamcity[publishArtifacts path='#{Files[:autotx][:test_xml]}']"
+    puts "##teamcity[publishArtifacts '#{Files[:autotx][:test_log]}']"
   end
   
   #                      NUSPEC
@@ -232,8 +231,8 @@ namespace :castle do
       to = File.join( Folders[:"#{key}_nuspec"], "lib", FRAMEWORK )
       FileUtils.mkdir_p to
       cp f, to
-	  # return the file name and its extension:
-	  File.join(FRAMEWORK, File.basename(f))
+      # return the file name and its extension:
+      File.join(FRAMEWORK, File.basename(f))
     }
   end
   
@@ -249,8 +248,8 @@ namespace :castle do
     nuspec.language = "en-US"
     nuspec.licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0"	
     nuspec.requireLicenseAcceptance = "true"
-    nuspec.dependency "Castle.Core", "2.5.2"
-	nuspec.framework_assembly "System.Transactions", FRAMEWORK
+    nuspec.dependency "Castle.Core", "3.0.0"
+    nuspec.framework_assembly "System.Transactions", FRAMEWORK
     nuspec.output_file = Files[:tx][:nuspec]
     #nuspec.working_directory = Folders[:tx_nuspec]
 
@@ -272,17 +271,17 @@ namespace :castle do
     nuspec.language = "en-US"
     nuspec.licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0"
     nuspec.requireLicenseAcceptance = "true"
-    nuspec.dependency "Castle.Core", "2.5.2"
-    nuspec.dependency "Castle.Windsor", "2.5.3"
+    nuspec.dependency "Castle.Core", "3.0.0"
+    nuspec.dependency "Castle.Windsor", "3.0.0"
     nuspec.dependency Projects[:tx][:id], "[#{VERSION}]" # exactly equals
-	nuspec.framework_assembly "System.Transactions", FRAMEWORK
+    nuspec.framework_assembly "System.Transactions", FRAMEWORK
     nuspec.output_file = Files[:autotx][:nuspec]
     #nuspec.working_directory = Folders[:autotx_nuspec]
     
     nuspec_copy(:autotx, "*AutoTx.{dll,xml}")
-	# right now, we'll go with the conventions
-	#.each{ |ff| nuspec.file ff }
-	
+    # right now, we'll go with the conventions
+    #.each{ |ff| nuspec.file ff }
+    
     CLEAN.include(Folders[:autotx_nuspec])
   end
   
@@ -312,7 +311,7 @@ namespace :castle do
   
   desc "generate nuget package for autotx facility"
   nugetpack :autotx_nuget => [:output, :autotx_nuspec] do |nuget|
-	nuget.command     = Commands[:nuget]
+    nuget.command     = Commands[:nuget]
     nuget.nuspec      = Files[:autotx][:nuspec]
     nuget.output      = Folders[:nuget]
   end
@@ -320,13 +319,13 @@ namespace :castle do
   task :nuget_push => [:tx_nuget_push, :autotx_nuget_push]
   
   def nuget_key()
-	File.open( Files[:nuget_private_key] , "r") do |f|
-		return f.gets
-	end
+    File.open( Files[:nuget_private_key] , "r") do |f|
+        return f.gets
+    end
   end
   
   task :tx_nuget_push do
-	package = "#{Projects[:tx][:id]}.#{VERSION}.nupkg"
+    package = "#{Projects[:tx][:id]}.#{VERSION}.nupkg"
     sh "#{Commands[:nuget]} push -source #{Uris[:nuget_offical]} #{package} #{nuget_key()}"
   end
   
