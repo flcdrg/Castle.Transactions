@@ -243,7 +243,7 @@ namespace Castle.Services.Transaction
 		void IDependentAware.RegisterDependent(Task task)
 		{
 			if (_Committable == null)
-				throw new InvalidOperationException("commttable is null");
+				throw new InvalidOperationException("commitable is null");
 
 			if (_DependentTasks == null)
 				// the number of processor cores * 2 is a reasonable assumption if people are using the Fork=true option.
